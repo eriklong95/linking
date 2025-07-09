@@ -1,0 +1,12 @@
+*.i
+*.s
+*.o
+*.a
+*.so
+prog
+prog1
+progr
+prog-dyn
+prog-st
+prog1-dyn
+prog1-st

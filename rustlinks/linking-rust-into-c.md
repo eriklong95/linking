@@ -1,6 +1,6 @@
 # rustlinks
 
-This repository serves as a minimal example of how to
+This directory contains a minimal example of how to
 link object modules build from Rust source code into a C program.
 
 The code has been written to work on Linux and it will need modifications to work

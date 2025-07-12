@@ -15,3 +15,6 @@ state.o: state.c
 .PHONY: clean
 clean:
 	rm -f *.o prog
+
+symbol-table.md: symbol-table.template.md prog
+	sed 's/>>>//e' $< > symbol-table.md

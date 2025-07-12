@@ -92,7 +92,10 @@ The last 4 bytes of the entry defines a `long` which indicates the size of the
 symbol. In our case, that number is 4 which makes sense since `state` is declared
 as a variable of type `int` and `int`s are 4 bytes long.
 
-Where is it defined that the variable `state` is initialized to `1`?
+Where is it defined that the variable `state` is initialized to `1`? Because this
+is a relocatable object file and the variable is defined in this module, we can just
+find the section where it is defined and the `value` property will be the offset
+into this section where the symbol is defined. Here we find `1`
 
 What are the real names of the properties of a symbol table entry?
 

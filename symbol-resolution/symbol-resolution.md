@@ -15,7 +15,7 @@ table is
    Num:    Value          Size Type    Bind   Vis      Ndx Name
      0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT  UND 
      1: 0000000000000000     0 FILE    LOCAL  DEFAULT  ABS state.c
-     2: 0000000000000000     4 OBJECT  GLOBAL DEFAULT    2 state
+     2: 0000000000000000     4 OBJECT  GLOBAL DEFAULT    3 state
 ```
 
 (This table can be printed by running `readelf -s state.o`.)
@@ -116,3 +116,5 @@ as a variable of type `int` and `int`s are 4 bytes long.
 Where is it defined that the variable `state` is initialized to `1`?
 
 What are the real names of the properties of a symbol table entry?
+
+Symbol table '.symtab' contains 3 entries:

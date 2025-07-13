@@ -91,9 +91,11 @@ holding an `int` value.
 
 The next byte defines the `st_other` property which is unused.
 
-The next two bytes is the `section` property which tells us which section contains
-the definition of the symbol. In our case, `section` is 3, which is also the index
-of the
+The next two bytes defines the `st_shndx` property which indicates the index of the
+section where the symbol is defined. The data type is `Elf64_Half`, a two-byte
+long unsigned integer. In our case, the property has the value `2`. We can look up
+that this is the index of the `.data` section. This is the section for initialized
+variables so this makes sense.
 
 value, address? What do we mean by the `value` of a symbol?
 

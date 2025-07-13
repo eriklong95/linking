@@ -97,16 +97,42 @@ long unsigned integer. In our case, the property has the value `2`. We can look 
 that this is the index of the `.data` section. This is the section for initialized
 variables so this makes sense.
 
-value, address? What do we mean by the `value` of a symbol?
+The next eight bytes define the property `st_value` of type `Elf64_Addr`, a type
+used for program addresses. What is the meaning of this property? The symbol we
+are dealing with here is a variable initialized to `1`. The name of the property
+suggests that the property is the value of the variable in this case, that is, `1`
+but the type of the property suggests something else.
 
-The last 4 bytes of the entry defines a `long` which indicates the size of the
-symbol. In our case, that number is 4 which makes sense since `state` is declared
-as a variable of type `int` and `int`s are 4 bytes long.
+The meaning of the `st_value` property differs depending on what type of object
+file we are dealing with and type of symbol. For a symbol from a relocatable
+object module which has a definition within that module, the `st_value` property
+indicates the offset into the section containing the symbol where the symbol's
+definition is.
 
-Where is it defined that the variable `state` is initialized to `1`? Because this
-is a relocatable object file and the variable is defined in this module, we can just
-find the section where it is defined and the `value` property will be the offset
-into this section where the symbol is defined. Here we find `1`
+In our concrete case, the `st_value` property has the value `0`. We have already
+learned that the symbol is the defined the `.data` section, so this tells us that
+the definition of the `state` symbol resides at an offset of `0` into the `.data`
+section. But how far from this point in the object file should we read to get
+whole definition and nothing more? The last eight bytes of the symbol table entry
+can help us with that. They define the property `st_size`, an unsigned integer,
+which simply indicates the size of the symbol. We see that in our case the size is
+4.
 
-What are the real names of the properties of a symbol table entry?
+We now know that to read the definition of the symbol `state`, we must read `4`
+bytes from offset `0` into in the `.data` section.
 
+First, we look up the offset of the `.data` section.
+
+```
+>>> readelf -S state.o | grep -E "Name|\.data" -A1
+```
+
+The offset is `0x40`. Now we know what part of the object file to read and find
+the bytes
+
+```
+>>> xxd -s 0x40 -l 0x4 state.o
+```
+
+Given the C source file, we cannot be surprised that this is the definition of
+the symbol `state`.

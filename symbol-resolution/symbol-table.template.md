@@ -50,9 +50,10 @@ Let's inspect the last symbol table entry, the one corresponding to the symbol
 
 Different parts of this byte sequence defines different properties of the symbol.
 
-The first four bytes defines an `int` which is the `name` property. This is an
-offset from the beginning of the `.strtab` (string table) section of the object
- module which indicates the beginning of the null-terminated string which is the
+The first four bytes defines `st_name` property. The data type is `Elf64_Word`, an
+unsigned integer. This property is an offset from the beginning of the `.strtab`
+(string table) section of the object module which indicates the beginning of the
+null-terminated string which is the
 name of the symbol. In this case, those four bytes defines the number `9` (little-
 endian byte ordering).
 
@@ -60,7 +61,7 @@ To find this string, we first read the section header table to find the offset o
 the `.strtab` section.
 
 ```
->>> readelf -S state.o | grep -E "Name|symtab" -A 1
+>>> readelf -S state.o | grep -E "Name|strtab" -A 1
 ```
 
 We see that the `.strtab` section starts at offset `0xd8`, and dumping `state.o`
@@ -73,14 +74,22 @@ from 9 bytes after this offset gives
 This tells us that the name of the last entry in the symbol table is `state` (which
 is not a surprise).
 
-The next byte of a symbol table entry defines the `type` and `binding` properties of
-the entry with the first 4 bits defining the `type` and the next 4 defining the
-`binding`. The `type` property tells use which kind of symbol we dealing with (data
-object or function or something else) and the `binding` tells use whether the symbol
-is local or global. In our case, this byte is `0x11`, so the `type` is the bits
-`0001` and `binding` is the bits `0001`. What does that mean?
+The next byte of a symbol table entry defines the `st_info` property. This property
+tells us the type and the binding (scope) of the symbol. The four high-order bits
+define the binding, the four low-order bits define the type. In this case, the byte
+is `0x11`. This means that the `state` symbol has value `1` for the binding and also
+value `1` for the type.
 
-The next byte is unused.
+For symbol bindings, value `1` indicates the binding `STB_GLOBAL` which means that
+this symbol is a global symbol i.e. it is visible to all object files. It makes good
+sense that the `state` symbol has this binding because we know that, in the program
+we are building, it is referenced by another module.
+
+For symbol types, value `1` indicates the type `STT_OBJECT` which means that the
+symbol is a data object. Again, this makes good sense because `state` is a variable
+holding an `int` value.
+
+The next byte defines the `st_other` property which is unused.
 
 The next two bytes is the `section` property which tells us which section contains
 the definition of the symbol. In our case, `section` is 3, which is also the index

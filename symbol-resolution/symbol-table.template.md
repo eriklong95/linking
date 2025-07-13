@@ -61,7 +61,7 @@ To find this string, we first read the section header table to find the offset o
 the `.strtab` section.
 
 ```
->>> readelf -S state.o | grep -E "Name|strtab" -A 1
+>>> readelf -S state.o | grep -E "Name|\.strtab" -A 1
 ```
 
 We see that the `.strtab` section starts at offset `0xd8`, and dumping `state.o`

@@ -1,21 +1,5 @@
 # Relocation
 
-
-In the symbol table for `prog`, the symbol `state` has value `0x4010`.
-
-Effect of relocation: updated addresses
-
-What relocation entries does `mod.o` have?
-
-relocation entry for first reference to `state`
-
-find `.rela.text` segment
-inspect first relocation entry
-does symbol table index in relocation entry match entry for `state`
-in symbol table for `mod.o`?
-
----
-
 The source file `mod.c` references the externally defined variable `state`
 at the first line of the `modify` function.
 
@@ -41,13 +25,14 @@ object file `mod.o` compiled from `mod.c`.
 
 The object file `mod.o` contains among other things a segment with the
 code for `modify` (compiled and assembled from the original C source code).
-Using the `objdump` tool we dissassemble `mod.o`
+Using the `objdump` tool we dissassemble `mod.o`:
 
 ```
 >>> objdump -d mod.o | grep 000000 -A5
 ```
 
-Reading the assembly code of this output, we find the instruction
+Reading the assembly code of this output, we see that the first
+instruction of the code for `modify` is
 
 ```
 >>> objdump -d mod.o | grep -oE "mov\s+0x0\(%rip\),%eax"
@@ -59,16 +44,15 @@ variable `state` in `mod.c`. We note the that memory location to read
 from is given as `0x0(%rip)`, zero addresses after the PC.
 
 The binary object code corresponding to this assembly code instruction is
-a sequence of `6` bytes starting at offset `0x8` into the code for `modify`
-and consisting of the bytes
+a sequence of `6` bytes consisting of the bytes
 
 ```
 >>> objdump -d mod.o | grep -E "mov\s+0x0\(%rip\),%eax" | grep -oE "([a-f0-9]{2} )+"
 ```
 
 The four last bytes *probably* indicate the memory location to read from.
-We note that this sequence of bytes start at offset `0xa` into the code
-for `modify`, and that it is a sequence of zero-bytes.
+We note the offset of this sequence of bytes into the code
+for `modify`, and we note that it is a sequence of zero-bytes.
 
 The object module in `mod.o` will be transformed during the process of
 creating the final executable object file (`prog`). How does the code
@@ -81,18 +65,18 @@ find it:
 >>> objdump -d prog | grep "<modify>:" -A5
 ```
 
-We see that the `6` bytes long object code segment starting at offset
-`0x8` into the code for `modify` has now changed to
+We see that the `6` bytes long object code segment at the beginning of
+`modify` which corresponds to the first move instruction has now changed to
 
 ```
->>> objdump -d prog | grep 118a: | grep -oE "\s+([a-f0-9]{2} )+"
+>>> objdump -d prog | grep -E "mov\s+0x[a-f0-9]+\(%rip\),%eax" | grep -oE "\s+([a-f0-9]{2} )+"
 ```
 
 The last four bytes which we claim indicates the memory location to read
 from has now changed and the corresponding assembly code is now given as
 
 ```
->>> objdump -d prog | grep 118a: | grep -oE "mov.*%eax"
+>>> objdump -d prog | grep -oE "mov\s+0x[a-f0-9]+\(%rip\),%eax"
 ```
 
 If we interpret the new values for the last four bytes of the object code
@@ -112,23 +96,22 @@ linking process. The section `.rela.text` of the relocatable object file
 `mod.o` contains the relocation entries for the section `.text` which
 contains the machine code compiled from `mod.c`.
 
-Recall that the memory reference which we are investigating here is located
-at offset `0xa` into the code for `modify`. By consulting the symbol table,
-we can find the offset of `modify` into the `.text` section. That offset is
-`0x0` so the memory reference of interest is located at offset `0xa` into
-the `.text` section.
+The relocation entries in `.rela.text` reference the memory references
+they concern using an offset into the `.text` section. By consulting the
+symbol table, we can find the offset of `modify` into the `.text` section.
+That offset is `0x0`. The memory reference which we are interested in is
+at the beginning of `modify` and we can find the exact offset with `objdump`:
+
+```
+>>> objdump -d mod.o | grep "<modify>:" -A4
+```
 
 The `.rela.text` has a relocation entry for that code location:
 
 ```
->>> readelf -r mod.o | grep 0000000a -B1
-```
-
-We can also view the raw data for this relocation entry by dumping the
-relevant part of `mod.o`
-
-```
->>> xxd -s 0x1c0 -l 0x90 mod.o
+>>> readelf -r mod.o | grep "Relocation section '.rela.text'" -A1
+--
+>>> readelf -r mod.o | grep -m 1 state
 ```
 
 What does the `Info` property mean? The relocation entries that we see here
@@ -138,15 +121,17 @@ of type `Elf64_Xword`, an eight byte long unsigned integer. The high-order 32
 bits of this value is the index in the symbol table of the symbol which the 
 relocation concerns; the low-order 32 bits is the relocation type.
 
-We see that the symbol table index is `6`, while the relocation type is `2`.
-The symbol `state` (an externally defined global symbol from the point of view
-of `mod.o`) indeed has index `6` in the symbol table of `mod.o`. The value
-`2` for the relocation type indicates the type `R_X86_64_PC32`, which is the
-relocation type for references which uses 32-bit PC-relative addressing.
+We see that the symbol table index indeed corresponds the symbol `state`
+(an externally defined global symbol from the point of view
+of `mod.o`) has in the symbol table of `mod.o`. The value of the relocation
+type is `2` which indicates the type `R_X86_64_PC32`. This relocation type
+is the relocation type for references which uses 32-bit PC-relative addressing.
 
 It sounds like it could be interesting to know more about the `R_X86_64_PC32`
 relocation type. What does PC-relative addressing means? How does the linker
 process relocation entries of this type?
+
+## PC-relative addressing
 
 Let's start with answering what PC-relative addressing means: When the CPU
 meets an instruction which uses PC-relative addressing for a reference, it

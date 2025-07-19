@@ -3,3 +3,4 @@
 *.s
 prog
 symbol-table.md
+relocation.md

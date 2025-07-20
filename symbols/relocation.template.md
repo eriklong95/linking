@@ -140,23 +140,69 @@ find the data it is looking for) by adding the value of the PC-relative
 address to the current runtime value of the PC. 32-bit PC-relative addressing
 just means that the value to be added to the PC is a 32-bit value.
 
-If we look at the dissambled code for `modify`, we that for the reference
-we are investigating (the one at offset `0xa` into the function's code)
-there are 4 bytes (placeholder) for the reference - that 32 bits - and in the
-assembly code the reference is notated as an address relative to `%rip` which
-is exactly the PC.
+In the instruction, which we have been investigating, the four last bytes
+indicate an address. Note that four bytes is 32 bits. These four bytes are
+all zero in the relocatable object file `mod.o` but are changed to some value
+in the executable object file `prog`. This value is exactly the value used
+for PC-relative addressing to compute the effective address. Also, note that
+in the assembly code, the address is notated as `0x...(%rip)` - some value
+plus the value of the PC.
 
-How is the value which it is changed to computed?
+We now understand what PC-relative addressing is but we still haven't found
+out how the value used as the offset from the PC is computed. So next, we want
+to answer the questions: How is the 32-bit value in the executable object file
+which is used for the PC-relative addressing computed?
 How do we find the information in `mod.o` which is needed to compute this
 value?
 
-Guess: first relocation entry corresponds to first symbol reference
+## Updating references
 
-relocation entries are 24 bytes long - dump the first one
+It is important to know that in the relocation step, the linker first decides
+on runtime addresses for the sections and symbols defined by the input modules.
+For example, before updating the reference to the symbol `state` which we are
+investigating, the linker first decides on a runtime address for the `.text`
+section of `mod.o` and a runtime address of the symbol `state`.
 
-our object file has `.rela.text` section
+For the relocation type `R_X86_64_PC32`, the address (that is, the 32-bit
+value used as the offset from the PC to find the address of the symbol being
+referenced) is computed as follows
 
-first 8 bytes: offset (always into `.text`)
-next 8 bytes: symbol table index (high-order 32 bits of value) and relocation
-type (low-order 32 bits of value)
-last 8 bytes: addend (what is this value used for)
+```
+  (runtime address of symbol) + (addend) - (runtime address of reference)
+```
+
+In our case, the addend is `-4`, so the runtime address of the reference minus
+the addend will give us the value that the PC will have when executing the
+instruction. This means that the value we are computing is actually just
+
+```
+  (runtime address of symbol) - (runtime address of PC)
+```
+
+which is of course exactly what we need for PC-relative addressing.
+
+How is the addend computed for relocations of type `R_X86_64_PC32`? Is it always
+`-4`?
+
+The runtime address of the symbol `state` which the linker decided upon can be
+read from the symbol table of the executable object file `prog`:
+
+```
+>>> readelf -s prog | grep -E "Symbol table '\.symtab'|state$" -A1 -B1
+```
+
+The runtime address is the `Value` property of this table.
+
+The runtime address of the reference is computed by adding the offset from the
+relocation entry to the runtime address of the `.text` section of `mod.o`. Can
+we see the runtime address of the `.text` section of `mod.o` anywhere? In any
+case, we can read the runtime address of the reference by dissassembling the
+executable object file `prog`.
+
+```
+>>> objdump -d prog | grep "<modify>:" -A4 -B3
+```
+
+We can now carry out the computation and we can see that it equals the updated
+value.
+

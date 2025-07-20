@@ -40,7 +40,7 @@ instruction of the code for `modify` is
 
 which moves a value from a location in memory to the register `%eax`. This
 is probably the assembly code corresponding to the first reading of the
-variable `state` in `mod.c`. We note the that memory location to read
+variable `state` in `modify`. We note the that memory location to read
 from is given as `0x0(%rip)`, zero addresses after the PC.
 
 The binary object code corresponding to this assembly code instruction is
@@ -53,6 +53,9 @@ a sequence of `6` bytes consisting of the bytes
 The four last bytes *probably* indicate the memory location to read from.
 We note the offset of this sequence of bytes into the code
 for `modify`, and we note that it is a sequence of zero-bytes.
+
+These zero-values cannot possibly indicate the address where the value of
+the `state` variable will actually by stored.
 
 The object module in `mod.o` will be transformed during the process of
 creating the final executable object file (`prog`). How does the code
@@ -133,11 +136,13 @@ process relocation entries of this type?
 
 ## PC-relative addressing
 
-Let's start with answering what PC-relative addressing means: When the CPU
+What is PC-relative addressing?
+
+When the CPU
 meets an instruction which uses PC-relative addressing for a reference, it
 computes the effective address (the place address where it will actually
 find the data it is looking for) by adding the value of the PC-relative
-address to the current runtime value of the PC. 32-bit PC-relative addressing
+address to the current value of the PC. 32-bit PC-relative addressing
 just means that the value to be added to the PC is a 32-bit value.
 
 In the instruction, which we have been investigating, the four last bytes
@@ -162,6 +167,9 @@ on runtime addresses for the sections and symbols defined by the input modules.
 For example, before updating the reference to the symbol `state` which we are
 investigating, the linker first decides on a runtime address for the `.text`
 section of `mod.o` and a runtime address of the symbol `state`.
+
+This makes sense: before you can compute references to a value, you must
+decide where that value should be stored.
 
 For the relocation type `R_X86_64_PC32`, the address (that is, the 32-bit
 value used as the offset from the PC to find the address of the symbol being

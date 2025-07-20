@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "vector.h"
 
 void addvec(int *, int *, int *, int);
 

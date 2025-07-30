@@ -137,7 +137,16 @@ stored at `GOT[2]`. What is the point in that?
 The interesting thing is that if we debug with `gdb` and stand at the point where
 `addvec` is about to be called from `main`, the value in `GOT[3]` is actually
 different: At that point, the GOT entry holds the runtime address of `addvec`.
-When does that change?. See when we change to real address of `addvec`
+When does that change?. We can actually find out by setting a break point at the
+`_start`. Then execution will halt at `_start` in the dynamic linker. At that
+point `GOT[3]` has not changed yet. But when we get to `_start` from `prog`, the
+value has changed to what is the actual runtime address of `addvec`. How exactly
+did the dynamic linker compute this value?
+
+With the value in `GOT[3]` updated, it is now clear what will happen when we get
+to the call to `addvec` in `main`: we will execute the code for `addvec@plt` which
+jumps to the address stored in `GOT[3]` which is now the address of `addvec`. All
+is good!
 
 The symbol tables have the following entries for `addvec`:
 
@@ -146,7 +155,7 @@ The symbol tables have the following entries for `addvec`:
 ```
 
 The thing to note here is that `addvec` is declared as an undefined, global
-symbol.
+symbol. Otherwise, not so interesting.
 
 With the dynamic linking approach, there is a relocation entry for `addvec`.
 That was not the case with static linking.
@@ -158,7 +167,9 @@ That was not the case with static linking.
 We note that the `Offset` property is exactly `GOT[3]`, the value for the
 indirect jump in `addvec@plt`.
 
-What does the relocation type `R_X86_64_JUMP_SLO` mean?
+What does the relocation type `R_X86_64_JUMP_SLO` mean? Perhaps understanding this
+is the key to understand what the dynamic linker did to put the runtime address of
+`addvec` in `GOT[3]`.
 
 
 

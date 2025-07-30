@@ -10,3 +10,4 @@ prog-dyn
 prog-st
 prog1-dyn
 prog1-st
+dynamic-linking.md

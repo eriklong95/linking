@@ -8,7 +8,7 @@ int z[2];
 
 int main(int argc, char *argv[]) {
   void *handle;
-  void (*function)(int *, int *, int *, int);
+  void (*fn)(int *, int *, int *, int);
   char *error;
 
   handle = dlopen("./libvector.so", RTLD_LAZY);
@@ -17,14 +17,22 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  function = dlsym(handle, argv[1]);
+  char *fn_name = argv[1];
+
+  fn = dlsym(handle, fn_name);
   if ((error = dlerror()) != NULL) {
     fprintf(stderr, "%s\n", error);
     exit(1);
   }
 
-  function(x, y, z, 2);
+  printf("Address of function %s is %p\n", fn_name, fn);
+
+  fn(x, y, z, 2);
   printf("z = [%d %d]\n", z[0], z[1]);
+
+  int *addcnt = dlsym(handle, "addcnt");
+
+  printf("addcnt = %d\n", *addcnt);
 
   if (dlclose(handle) < 0) {
     fprintf(stderr, "%s\n", dlerror());

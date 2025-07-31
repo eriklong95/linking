@@ -1,46 +1,5 @@
 # Dynamic Linking
 
-## Questions
-
-How is *dynamic linking* different from "usual" linking?
-
-What is the output of a dynamic linking process and what
-information is created?
-
-What are the advantages of dynamic linking? Are there any
-downsides?
-
-With dynamic linking, shared libraries can be used as input.
-What is *shared* about a shared library? Who is sharing it?
-
-At what point should the references to a shared library be
-supplied? At linktime, at loadtime or at runtime?
-
-When doing dynamic linking with a shared library, are any
-parts of or any information from the shared library stored
-in the executable?
-
-## Notes
-
-disadvantages of static library
-
-- relink needed when static library is updated
-
-loader notices `.interp`, path to dynamic linker, passes control to
-dynamic linker
-
-with loadtime dynamic linking, the executable is changed while in
-memory (relocations)
-
-## Goals
-
-find path of dynamic linker in `.interp` section
-
-find relocation and symbol info in partially linked executable
-
-what is the default? how is libc linking into the standard hello-world
-program?
-
 ## Shared Libraries Saves Space
 
 Many programs use the function `printf` from the C standard library.
@@ -122,7 +81,7 @@ jump to the address stored at location
 ```
 
 This location is actually the entry at index `3` in the *global offset table*,
-GOT[3] for short. The entries in the GOT are 8 bytes long, and we dump the GOT
+`GOT[3]` for short. The entries in the GOT are 8 bytes long, and we dump the GOT
 from the executable `prog`, we see the value stored in this entry in the file:
 
 ```
@@ -130,7 +89,13 @@ from the executable `prog`, we see the value stored in this entry in the file:
 ```
 
 We see that the address stored at `GOT[3]` in the file `prog` is an address in the
-`.plt` section. Executing the code from that address has the effect of pushing the
+`.plt` section:
+
+```
+>>> objdump -d prog | grep "<.plt>:" -A12  
+```
+
+Executing the code from that address has the effect of pushing the
 value `0x0` as well as the address of `GOT[1]` and then jumping to the address
 stored at `GOT[2]`. What is the point in that?
 

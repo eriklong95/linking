@@ -8,7 +8,7 @@ int z[2];
 
 int main(int argc, char *argv[]) {
   void *handle;
-  void (*addvec)(int *, int *, int *, int);
+  void (*function)(int *, int *, int *, int);
   char *error;
 
   handle = dlopen("./libvector.so", RTLD_LAZY);
@@ -17,13 +17,13 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  addvec = dlsym(handle, argv[1]);
+  function = dlsym(handle, argv[1]);
   if ((error = dlerror()) != NULL) {
     fprintf(stderr, "%s\n", error);
     exit(1);
   }
 
-  addvec(x, y, z, 2);
+  function(x, y, z, 2);
   printf("z = [%d %d]\n", z[0], z[1]);
 
   if (dlclose(handle) < 0) {

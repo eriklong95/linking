@@ -52,3 +52,5 @@ but no such symbol exists. If we try, we get the error
 ## Questions
 
 Where does the loaded code go?
+
+What errors can you get from unloading a shared library?

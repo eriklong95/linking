@@ -18,7 +18,7 @@ cmalloc.o: cmalloc.s
 	$(CC) -Og -g -c $^
 
 cmalloc.s: cmalloc.c
-	$(CC) -DCOMPILETIME -Og -S $^
+	$(CC) -Og -S $^
 	
 .PHONY: clean
 clean:

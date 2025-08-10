@@ -1,4 +1,3 @@
-#ifdef COMPILETIME
 #include <stdio.h>
 #include <malloc.h>
 
@@ -12,5 +11,3 @@ void myfree(void *ptr) {
   free(ptr);
   printf("free(%p)\n", ptr);
 }
-
-#endif

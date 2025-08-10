@@ -15,12 +15,18 @@ calls happen?
 
 ## Compile-time interpositioning
 
-assembly code is different
+assembly code is different, int.s vs intc.s
 
 ## Link-time interpositioning
 
 pass options to static linker
 
+we use standard object file `int.o` as input to linker
+
+what does the executable look like? Any traces of custom impls
+
 ## Run-time interpositioning
 
 uses standard program
+
+why do we need to use `dlsym`?

@@ -9,4 +9,18 @@ For each of the different interpositioning methods, how is the program
 changed to make the interception and redirection of library function
 calls happen?
 
+## Standard program
+
+
+
 ## Compile-time interpositioning
+
+assembly code is different
+
+## Link-time interpositioning
+
+pass options to static linker
+
+## Run-time interpositioning
+
+uses standard program

@@ -1,6 +1,6 @@
 CC = gcc
 
-all: int intc intl
+all: int intc intl rmalloc.so
 
 int: int.o
 	$(CC) -o $@ $^
@@ -34,6 +34,15 @@ lmalloc.o: lmalloc.s
 
 lmalloc.s: lmalloc.c
 	$(CC) -Og -S $^
+
+rmalloc.so: rmalloc.o
+	$(CC) -shared -fpic -o $@ $^ -ldl
+
+rmalloc.o: rmalloc.c
+	$(CC) -fpic -Og -g -c $^
+
+rmalloc.s: rmalloc.c
+	$(CC) -fpic -Og -S $^
 	
 .PHONY: clean
 clean:

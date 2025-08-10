@@ -1,4 +1,3 @@
-#ifdef RUNTIME
 #define _GNU_SOURCE
 #include <stdlib.h>
 #include <dlfcn.h>
@@ -20,7 +19,11 @@ void *malloc(size_t size) {
 
   char s[128];
   sprintf(s, "malloc(%d) = %p\n", (int)size, ptr);
-  write(2, s, strlen(s));
+  ssize_t result = write(2, s, strlen(s));
+  if (result == -1) {
+    fputs("write error", stderr);
+    exit(1);
+  }
   return ptr;
 }
 
@@ -37,6 +40,10 @@ void free(void *ptr) {
   freep(ptr);
   char s[128];
   sprintf(s, "free(%p)\n", ptr);
-  write(2, s, strlen(s));
+  
+  ssize_t result = write(2, s, strlen(s));
+  if (result == -1) {
+    fputs("write error", stderr);
+    exit(1);
+  }
 }
-#endif

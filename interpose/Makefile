@@ -46,5 +46,8 @@ rmalloc.s: rmalloc.c
 	
 .PHONY: clean
 clean:
-	rm -f *.so *.o *.s int intc intl
+	rm -f *.so *.o *.s int intc intl library-interpositioning.md
+
+library-interpositioning.md: library-interpositioning.template.md all
+	sed 's/>>>//e' $< > $@
 

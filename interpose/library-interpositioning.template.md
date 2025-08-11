@@ -109,6 +109,20 @@ To do link-time interpositioning, we need access to the relocatable object file
 
 ## Run-time interpositioning
 
-uses standard program
+Even if we don't have access to the source code or the relocatable object files
+used to build an executable, we can still do library interpositioning.
 
-why do we need to use `dlsym`?
+To do this, we build a shared object with functions whose names and prototypes
+match the functions that we want to interpose on. In our example, we have built
+the shared object `rmalloc.so` from the source code in `rmalloc.c`. To achieve
+the interpositioning, we invoke the standard program `int` with the environment
+variable `LD_PRELOAD` pointing to our shared object like so
+
+```
+  LD_PRELOAD="./rmalloc.so" ./int
+```
+
+Note that we have not made any change to the standard program.
+
+We can see in `rmalloc.c` that we don't need to `dlopen` libc to get access to
+the standard `malloc` function. Why is that?

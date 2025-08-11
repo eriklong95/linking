@@ -44,7 +44,30 @@ works.
 
 ## Compile-time interpositioning
 
-assembly code is different, int.s vs intc.s
+Interpositioning can be achieved by changing the way the source file is compiled.
+
+The file `cmalloc.c` contains custom implementations of `malloc` and `free`. We
+want to change the way we build an executable from `int.c` such that it calls
+our custom implementations instead of the ones from the C standard library.
+
+To achieve this, we pass the option `-include malloc.h` to the command which
+compiles assembly code from `int.c` thus producing the alternative assembly code
+file `intc.s`. The header file `malloc.h` redefines `malloc(size)` to mean a call
+to our alternative implementation.
+
+Comparing the assembly code file `intc.s` to the file `int.s` produced by the
+standard compilation process, we see that the names of our custom implementations
+now appear in the assembly code for the main function:
+
+```
+>>> cat intc.s | grep "main:" -A10
+```
+
+Put differently, the assembly code is tightly coupled to our custom implementations.
+
+To achieve this kind of interpositioning, we must have access to the source code
+because we must control the compilation process. What if we only have the object
+module `int.o`? Then we can do the interpositioning at link-time.
 
 ## Link-time interpositioning
 

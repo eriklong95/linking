@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
-#define malloc(size) mymalloc(size)
-#define free(ptr) myfree(ptr)
+#define malloc(size) cmalloc(size)
+#define free(ptr) cfree(ptr)
 
-void *mymalloc(size_t size);
-void myfree(void *ptr);
+void *cmalloc(size_t size);
+void cfree(void *ptr);
